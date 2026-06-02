@@ -1,6 +1,11 @@
 # DungLang v0.7 prototype / patched demo 🦍🔥🪨
 
 > Stench-driven programming language. UUHO.
+> # DungLang
+
+DungLang is an experimental Python prototype for modeling causality, side effects, and responsibility in a small symbolic language.
+
+It asks a simple question: what if a language could record effects without blaming the type system?
 
 ---
 
