@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DungLang v0.7 patched — 言語仕様書</title>
+<link href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0e0b07;
+  --bg2:       #17120a;
+  --bg3:       #221a0f;
+  --stone:     #3a2d1c;
+  --stone2:    #5a4530;
+  --pale:      #b09060;
+  --dust:      #d4b87a;
+  --ash:       #ede0c4;
+  --fire:      #e05c10;
+  --ember:     #f09520;
+  --lava:      #ff4500;
+  --green:     #7ec894;
+  --purple:    #c090e0;
+  --red:       #e05040;
+  --crack:     rgba(176,144,96,0.15);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ash);
+  font-family: 'Kaisei Decol', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── 洞窟壁テクスチャ ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.6;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--stone); border-radius: 3px; }
+
+.wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 2rem 8rem;
+}
+
+/* ══════════════════════
+   ヒーロー
+══════════════════════ */
+.hero {
+  padding: 5rem 0 4rem;
+  text-align: center;
+  position: relative;
+}
+
+.hero-fire {
+  font-size: 3.5rem;
+  line-height: 1;
+  margin-bottom: 1.5rem;
+  display: block;
+  animation: rise 4s ease-in-out infinite;
+}
+
+@keyframes rise {
+  0%, 100% { transform: translateY(0) scale(1); filter: brightness(1); }
+  50%       { transform: translateY(-8px) scale(1.05); filter: brightness(1.2); }
+}
+
+.hero-title {
+  font-size: clamp(3.5rem, 10vw, 7rem);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 0.9;
+  color: var(--dust);
+  text-shadow:
+    4px 4px 0 var(--stone),
+    8px 8px 0 rgba(224,92,16,0.25),
+    0 0 80px rgba(224,92,16,0.15);
+}
+
+.hero-ver {
+  display: inline-block;
+  margin: 1.25rem auto 0;
+  padding: 4px 18px;
+  border: 1px solid var(--pale);
+  color: var(--pale);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  border-radius: 2px;
+}
+
+.hero-sub {
+  margin-top: 1.5rem;
+  color: var(--pale);
+  font-size: 0.95rem;
+  line-height: 2;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ══════════════════════
+   ナビゲーション
+══════════════════════ */
+.toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--stone);
+  border-bottom: 1px solid var(--stone);
+  margin-bottom: 4rem;
+  justify-content: center;
+}
+
+.toc a {
+  padding: 4px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--stone);
+  border-radius: 2px;
+  color: var(--pale);
+  text-decoration: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  transition: all .2s;
+}
+.toc a:hover {
+  border-color: var(--fire);
+  color: var(--ember);
+  background: rgba(224,92,16,0.08);
+}
+
+/* ══════════════════════
+   セクション共通
+══════════════════════ */
+.section {
+  margin-bottom: 5rem;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: fadeup .6s ease forwards;
+}
+.section:nth-child(1)  { animation-delay: 0.1s; }
+.section:nth-child(2)  { animation-delay: 0.2s; }
+.section:nth-child(3)  { animation-delay: 0.3s; }
+.section:nth-child(4)  { animation-delay: 0.4s; }
+.section:nth-child(5)  { animation-delay: 0.5s; }
+.section:nth-child(6)  { animation-delay: 0.6s; }
+.section:nth-child(7)  { animation-delay: 0.7s; }
+.section:nth-child(8)  { animation-delay: 0.8s; }
+.section:nth-child(9)  { animation-delay: 0.9s; }
+.section:nth-child(10) { animation-delay: 1.0s; }
+.section:nth-child(11) { animation-delay: 1.1s; }
+
+@keyframes fadeup {
+  to { opacity: 1; transform: none; }
+}
+
+.sec-head {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--stone);
+}
+
+.sec-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--fire);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+.sec-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ember);
+  line-height: 1.3;
+}
+
+.sec-badge {
+  margin-left: auto;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  padding: 2px 10px;
+  border: 1px solid var(--stone2);
+  color: var(--stone2);
+  border-radius: 12px;
+  white-space: nowrap;
+}
+.sec-badge.new     { border-color: var(--green); color: var(--green); }
+.sec-badge.bug     { border-color: var(--red);   color: var(--red); }
+.sec-badge.core    { border-color: var(--ember);  color: var(--ember); }
+.sec-badge.patched { border-color: var(--green);  color: var(--green); background: rgba(126,200,148,0.08); }
+
+/* ══════════════════════
+   原理ボックス
+══════════════════════ */
+.axioms {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--stone);
+  border: 1px solid var(--stone);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.axiom {
+  background: var(--bg2);
+  padding: 1.1rem 1.4rem;
+  position: relative;
+  transition: background .2s;
+}
+.axiom:hover { background: var(--bg3); }
+
+.axiom-idx {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--stone2);
+  margin-bottom: 0.3rem;
+}
+
+.axiom-text {
+  font-size: 0.95rem;
+  color: var(--dust);
+  line-height: 1.6;
+}
+
+.axiom.broken {
+  background: rgba(224,80,64,0.06);
+}
+.axiom.broken .axiom-text {
+  color: var(--red);
+  text-decoration: line-through;
+  text-decoration-color: rgba(224,80,64,0.5);
+}
+.axiom.broken::after {
+  content: '❌ 崩壊';
+  position: absolute;
+  top: 0.6rem;
+  right: 0.8rem;
+  font-size: 0.65rem;
+  color: var(--red);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* ══════════════════════
+   型カード
+══════════════════════ */
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.type-card {
+  background: var(--bg2);
+  border: 1px solid var(--stone);
+  border-radius: 6px;
+  padding: 1.25rem 1.4rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s, transform .2s;
+}
+.type-card:hover {
+  border-color: var(--stone2);
+  transform: translateY(-2px);
+}
+.type-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--fire);
+}
+.type-card.t2::before { background: var(--ember); }
+.type-card.t3::before { background: var(--purple); }
+.type-card.t4::before { background: #60a0c0; }
+
+.type-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--green);
+  margin-bottom: 0.5rem;
+}
+
+.type-desc {
+  font-size: 0.88rem;
+  color: var(--pale);
+  line-height: 1.7;
+}
+
+/* ══════════════════════
+   コードブロック
+══════════════════════ */
+.code-wrap { margin: 1.25rem 0; }
+
+.code-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--stone2);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+  padding-left: 0.25rem;
+}
+
+pre.code {
+  background: #080604;
+  border: 1px solid var(--stone);
+  border-radius: 6px;
+  padding: 1.25rem 1.5rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.83rem;
+  line-height: 1.95;
+  color: #c8b888;
+  overflow-x: auto;
+  position: relative;
+}
+
+pre.code .kw   { color: var(--fire); font-weight: 600; }
+pre.code .kw2  { color: var(--ember); }
+pre.code .type { color: var(--green); }
+pre.code .str  { color: #c8a060; }
+pre.code .cmt  { color: var(--stone2); font-style: italic; }
+pre.code .op   { color: var(--purple); }
+pre.code .num  { color: #7ab8e8; }
+pre.code .exc  { color: var(--red); }
+pre.code .bad  { color: #e07070; }
+pre.code .good { color: var(--green); }
+
+.output {
+  background: #040302;
+  border: 1px solid #2a2010;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  padding: 0.9rem 1.5rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  line-height: 1.95;
+  color: #7a9a70;
+}
+.output .out-ok   { color: var(--green); }
+.output .out-warn { color: var(--ember); }
+.output .out-err  { color: var(--red); }
+.output .out-info { color: #7ab8e8; }
+.output .out-hi   { color: var(--green); font-weight: 600; }
+
+/* ══════════════════════
+   条約テーブル
+══════════════════════ */
+.treaty-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82rem;
+  border: 1px solid var(--stone);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.treaty-table th {
+  background: var(--stone);
+  color: var(--pale);
+  padding: 0.7rem 1rem;
+  text-align: left;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.treaty-table td {
+  background: var(--bg2);
+  padding: 0.65rem 1rem;
+  border-top: 1px solid var(--bg3);
+  color: #c8b888;
+  vertical-align: top;
+}
+.treaty-table tr:hover td { background: var(--bg3); }
+
+.badge-val {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 3px;
+  background: rgba(224,92,16,0.2);
+  color: var(--fire);
+  font-weight: 600;
+}
+.badge-zero { background: rgba(224,80,64,0.2); color: var(--red); }
+.badge-ok   { background: rgba(126,200,148,0.15); color: var(--green); }
+
+/* ══════════════════════
+   モナドフロー
+══════════════════════ */
+.monad-flow {
+  background: #080604;
+  border: 1px solid var(--stone);
+  border-radius: 6px;
+  padding: 1.5rem 2rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.88rem;
+  position: relative;
+  overflow: hidden;
+}
+.monad-flow::before {
+  content: 'PIPELINE';
+  position: absolute;
+  top: 0.7rem;
+  right: 1rem;
+  font-size: 0.6rem;
+  color: var(--stone2);
+  letter-spacing: 0.15em;
+}
+.mf-step {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.35rem 0;
+}
+.mf-op    { color: var(--ember); min-width: 2.5rem; font-weight: 600; }
+.mf-fn    { color: var(--green); }
+.mf-type  { color: var(--purple); font-size: 0.78rem; }
+.mf-arrow { margin: 0.1rem 0 0.1rem 3.5rem; font-size: 0.72rem; color: var(--stone2); }
+
+/* ══════════════════════
+   パターンマッチテーブル
+══════════════════════ */
+.match-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  border: 1px solid var(--stone);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.match-table th {
+  background: var(--stone);
+  color: var(--pale);
+  padding: 0.7rem 1.2rem;
+  text-align: left;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+.match-table td {
+  background: var(--bg2);
+  padding: 0.75rem 1.2rem;
+  border-top: 1px solid var(--bg3);
+  vertical-align: top;
+  line-height: 1.6;
+}
+.match-table tr:hover td { background: var(--bg3); }
+.match-table .pat  { font-family: 'IBM Plex Mono', monospace; color: var(--ember); }
+.match-table .res  { color: var(--green); }
+.match-table .cond { color: var(--pale); font-size: 0.85em; }
+
+/* ══════════════════════
+   GCフロー図
+══════════════════════ */
+.gc-flow { display: flex; flex-direction: column; gap: 0; }
+
+.gc-box {
+  background: var(--bg2);
+  border: 1px solid var(--stone);
+  border-radius: 6px;
+  padding: 1rem 1.4rem;
+  flex: 1;
+}
+.gc-box-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--stone2);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.gc-box-body { font-size: 0.9rem; color: var(--dust); line-height: 1.7; }
+.gc-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 1.5rem;
+  font-size: 0.85rem;
+  color: var(--stone2);
+  font-family: 'IBM Plex Mono', monospace;
+  gap: 0.5rem;
+}
+
+/* ══════════════════════
+   責任転嫁リスト
+══════════════════════ */
+.blame-list { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.blame-item {
+  padding: 5px 14px;
+  background: var(--bg2);
+  border: 1px solid var(--stone);
+  border-radius: 3px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--pale);
+  transition: all .15s;
+  cursor: default;
+}
+.blame-item:hover {
+  border-color: var(--ember);
+  color: var(--ember);
+  background: rgba(240,149,32,0.06);
+}
+
+/* ══════════════════════
+   大定理
+══════════════════════ */
+.theorem {
+  position: relative;
+  padding: 2.5rem;
+  border: 1px solid var(--pale);
+  border-radius: 8px;
+  background: var(--bg2);
+  text-align: center;
+  overflow: hidden;
+}
+.theorem::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(224,92,16,0.07) 0%, transparent 60%);
+  pointer-events: none;
+}
+.thm-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--stone2);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+.thm-name { font-size: 1.5rem; font-weight: 700; color: var(--ember); margin-bottom: 1.25rem; }
+.thm-formula {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.95rem;
+  color: var(--dust);
+  background: rgba(0,0,0,0.3);
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  line-height: 2;
+}
+
+/* ══════════════════════
+   バグレポート
+══════════════════════ */
+.bug-box {
+  background: rgba(224,80,64,0.05);
+  border: 1px solid rgba(224,80,64,0.3);
+  border-radius: 6px;
+  padding: 1.2rem 1.5rem;
+  margin: 1.25rem 0;
+}
+.bug-box.fixed {
+  background: rgba(126,200,148,0.04);
+  border-color: rgba(126,200,148,0.3);
+}
+.bug-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--red);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.bug-box.fixed .bug-title { color: var(--green); }
+.bug-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+}
+.bug-key {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--stone2);
+  min-width: 4rem;
+  font-size: 0.78rem;
+}
+.bug-val { color: var(--dust); line-height: 1.6; }
+
+/* ══════════════════════
+   ロードマップ
+══════════════════════ */
+.roadmap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  padding-left: 2rem;
+}
+.roadmap::before {
+  content: '';
+  position: absolute;
+  left: 0.55rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--fire), var(--stone));
+}
+.rm-item {
+  position: relative;
+  padding: 0.9rem 0 0.9rem 1.5rem;
+  border-bottom: 1px solid var(--bg3);
+}
+.rm-item:last-child { border-bottom: none; }
+.rm-item::before {
+  content: '';
+  position: absolute;
+  left: -1.55rem;
+  top: 1.3rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--stone);
+  border: 2px solid var(--stone2);
+}
+.rm-item.done::before    { background: var(--green); border-color: var(--green); }
+.rm-item.current::before { background: var(--fire);  border-color: var(--fire); box-shadow: 0 0 10px var(--fire); }
+
+.rm-ver  { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--fire); margin-bottom: 0.25rem; }
+.rm-item.done .rm-ver    { color: var(--green); }
+.rm-item.current .rm-ver { color: var(--ember); }
+.rm-desc { font-size: 0.92rem; color: var(--dust); }
+.rm-sub  { font-size: 0.8rem; color: var(--pale); margin-top: 0.3rem; font-family: 'IBM Plex Mono', monospace; }
+
+/* ══════════════════════
+   フッター
+══════════════════════ */
+.footer {
+  margin-top: 5rem;
+  padding: 2rem 0;
+  border-top: 1px solid var(--stone);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.footer-brand { font-size: 1.1rem; font-weight: 700; color: var(--dust); }
+.footer-meta { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--stone2); line-height: 2; text-align: right; }
+
+/* ══════════════════════
+   区切り
+══════════════════════ */
+.divider {
+  text-align: center;
+  padding: 1rem 0;
+  color: var(--stone2);
+  font-size: 1.1rem;
+  letter-spacing: 1.5rem;
+  margin: 3rem 0 4rem;
+  opacity: 0.5;
+}
+
+.note {
+  font-size: 0.85rem;
+  color: var(--pale);
+  line-height: 1.8;
+  padding: 0.75rem 1rem;
+  border-left: 2px solid var(--stone2);
+  margin: 1rem 0;
+}
+
+@media (max-width: 600px) {
+  .axioms, .type-grid { grid-template-columns: 1fr; }
+  .hero-title { font-size: 3.5rem; }
+  .footer { flex-direction: column; align-items: flex-start; }
+  .footer-meta { text-align: left; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ヒーロー -->
+  <header class="hero">
+    <span class="hero-fire">🦍🔥🪨</span>
+    <div class="hero-title">DungLang</div>
+    <div class="hero-ver">v 0 . 7  p a t c h e d  — 外 交 · 記 憶 · 責 任 転 嫁</div>
+    <p class="hero-sub">
+      因果を疑い、副作用を刻み、すべての責任を型で逃がさない。<br>
+      臭気安全性は型安全性を上回りました。<br>
+      <small style="opacity:.6">石器時代の関数型言語 — v0.7 prototype / patched demo</small>
+    </p>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <a href="#principles">基本原理</a>
+    <a href="#types">型システム</a>
+    <a href="#monad">臭気モナド</a>
+    <a href="#axiom">公理破壊</a>
+    <a href="#diplomacy">外交モジュール</a>
+    <a href="#gc">認知GC</a>
+    <a href="#blame">責任転嫁</a>
+    <a href="#bugfix">バグ修正</a>
+    <a href="#runlog">実行ログ</a>
+    <a href="#pattern">パターンマッチ</a>
+    <a href="#theorem">排出保存則</a>
+    <a href="#roadmap">ロードマップ</a>
+  </nav>
+
+  <!-- § 基本原理 -->
+  <section class="section" id="principles">
+    <div class="sec-head">
+      <span class="sec-num">§ 0</span>
+      <h2 class="sec-title">基本原理 — 石板に刻まれた4つの真実</h2>
+      <span class="sec-badge core">CORE</span>
+    </div>
+    <div class="axioms">
+      <div class="axiom broken">
+        <div class="axiom-idx">公理 I</div>
+        <div class="axiom-text">おならは観測されるまで風である</div>
+      </div>
+      <div class="axiom">
+        <div class="axiom-idx">公理 II</div>
+        <div class="axiom-text">焼き芋は副作用を隠蔽しない</div>
+      </div>
+      <div class="axiom broken">
+        <div class="axiom-idx">公理 III</div>
+        <div class="axiom-text">純粋関数は臭わない</div>
+      </div>
+      <div class="axiom">
+        <div class="axiom-idx">公理 IV</div>
+        <div class="axiom-text">臭った時点で世界は変更済み</div>
+      </div>
+    </div>
+    <p class="note" style="margin-top:1rem">公理 I・III はv0.7において哲学ゴリラにより崩壊済み。詳細は § 3 参照。</p>
+  </section>
+
+  <!-- § 型システム -->
+  <section class="section" id="types">
+    <div class="sec-head">
+      <span class="sec-num">§ 1</span>
+      <h2 class="sec-title">コア型システム — 値の4種類</h2>
+      <span class="sec-badge core">CORE</span>
+    </div>
+    <div class="type-grid">
+      <div class="type-card t1">
+        <div class="type-name">値</div>
+        <div class="type-desc">普通の値。副作用なし。信頼できる。だが油断は禁物ウホ。</div>
+      </div>
+      <div class="type-card t2">
+        <div class="type-name">臭値</div>
+        <div class="type-desc">なんか臭う値。副作用が検出済み。触る際は鼻を塞ぐこと。</div>
+      </div>
+      <div class="type-card t3">
+        <div class="type-name">疑値</div>
+        <div class="type-desc">原因か結果か未確定。シュレーディンガーの焼き芋。観測するまで判決不能。</div>
+      </div>
+      <div class="type-card t4">
+        <div class="type-name">石値</div>
+        <div class="type-desc">一度決まると変更不能。石板に刻まれた真実。<code style="color:var(--fire);font-size:0.85em">immutable</code>より古い。</div>
+      </div>
+    </div>
+
+    <div class="code-wrap" style="margin-top:1.5rem">
+      <div class="code-label">型宣言例</div>
+      <pre class="code"><span class="kw">石値</span> <span class="type">部族名</span>  = <span class="str">"ウホ族"</span>
+<span class="kw">疑値</span> <span class="type">焼き芋</span>  = 原因<span class="op">?</span> 結果<span class="op">?</span> おいしい<span class="op">?</span>
+<span class="kw">臭値</span> <span class="type">空気</span>    = <span class="op">💨</span>
+<span class="kw">値</span>   <span class="type">バナナ</span>   = <span class="num">3</span>           <span class="cmt">// 忘却閾値に等しい</span></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">型推論 — コンパイラは疑り深い</div>
+      <pre class="code">x = <span class="type">焼き芋を食べる</span>()</pre>
+      <div class="output">
+        <span class="out-ok">推論</span>  x : 満足 <span class="out-warn">💨</span><br>
+        <span class="out-warn">警告</span>  満足に副作用が混入しています
+      </div>
+    </div>
+  </section>
+
+  <div class="divider">💨 💨 💨</div>
+
+  <!-- § 臭気モナド -->
+  <section class="section" id="monad">
+    <div class="sec-head">
+      <span class="sec-num">§ 2</span>
+      <h2 class="sec-title">臭気モナド <code style="font-size:0.75em;color:var(--green)">臭気&lt;T&gt;</code></h2>
+      <span class="sec-badge core">CORE</span>
+    </div>
+    <p class="note">すべての副作用は臭気モナドで包まれ、<code style="color:var(--ember)">|</code> 演算子でチェーン（パイプライン）する。例外は throw されない。漂ってくる。</p>
+
+    <div class="monad-flow" style="margin-top:1.5rem">
+      <div class="mf-step"><span style="color:#c8b888;min-width:4rem">焼き芋</span><span class="mf-type">値</span></div>
+      <div class="mf-arrow">↓ bind</div>
+      <div class="mf-step"><span class="mf-op">|&gt;</span><span class="mf-fn">食べる</span><span class="mf-type" style="margin-left:auto">臭気&lt;満足&gt;</span></div>
+      <div class="mf-arrow">↓ bind</div>
+      <div class="mf-step"><span class="mf-op">|&gt;</span><span class="mf-fn">消化する</span><span class="mf-type" style="margin-left:auto">臭気&lt;ガス&gt;</span></div>
+      <div class="mf-arrow">↓ bind</div>
+      <div class="mf-step"><span class="mf-op">|&gt;</span><span class="mf-fn">発酵する</span><span class="mf-type" style="margin-left:auto">臭気&lt;圧力&gt;</span></div>
+      <div class="mf-arrow">↓ bind</div>
+      <div class="mf-step"><span class="mf-op">|&gt;</span><span class="mf-fn">解放する</span><span class="mf-type" style="margin-left:auto">臭気&lt;言い訳&gt;</span></div>
+    </div>
+
+    <div class="code-wrap" style="margin-top:1.5rem">
+      <div class="code-label">実装（Python）</div>
+      <pre class="code"><span class="kw">@dataclass</span>
+<span class="kw">class</span> <span class="type">臭気モナド</span>(<span class="type">Generic</span>[<span class="type">T</span>]):
+    値:         <span class="type">T</span>
+    副作用履歴: <span class="type">list</span>  = <span class="kw">field</span>(default_factory=list)
+    臭気レベル: <span class="type">int</span>   = <span class="num">0</span>
+
+    <span class="kw">def</span> <span class="type">bind</span>(self, func) -> <span class="str">"臭気モナド"</span>:
+        <span class="kw">try</span>:
+            結果 = func(self.値)
+        <span class="kw">except</span> <span class="exc">公理破壊例外</span> <span class="kw">as</span> e:
+            <span class="kw">return</span> 臭気モナド(臭気レベル=self.臭気レベル + <span class="num">999</span>, ...)
+        <span class="kw">except</span> <span class="exc">哲学ゴリラ例外</span> <span class="kw">as</span> e:
+            <span class="kw">return</span> 臭気モナド(臭気レベル=self.臭気レベル + <span class="num">99</span>, ...)
+
+    <span class="kw">def</span> <span class="op">__or__</span>(self, func):   <span class="cmt"># | 演算子でパイプ</span>
+        <span class="kw">return</span> self.bind(func)</pre>
+    </div>
+
+    <div style="margin-top:1.25rem">
+      <table class="treaty-table">
+        <thead>
+          <tr><th>例外型</th><th>発生条件</th><th>臭気レベル加算</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--red);font-family:'IBM Plex Mono',monospace">公理破壊例外</td>
+            <td>哲学ゴリラが自分のおならを哲学した場合のみ</td>
+            <td><span class="badge-val badge-zero">+999</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--ember);font-family:'IBM Plex Mono',monospace">哲学ゴリラ例外</td>
+            <td>哲学的乱気流の検出</td>
+            <td><span class="badge-val">+99</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- § 公理破壊 -->
+  <section class="section" id="axiom">
+    <div class="sec-head">
+      <span class="sec-num">§ 3</span>
+      <h2 class="sec-title">公理破壊モジュール</h2>
+      <span class="sec-badge new">v0.7 NEW</span>
+    </div>
+    <p class="note">哲学ゴリラが自分のおならを哲学した場合にのみ発生する、宇宙最凶の例外。これは例外ではなく公理の崩壊である。</p>
+
+    <div class="code-wrap" style="margin-top:1.5rem">
+      <div class="code-label">実行結果（v0.7 patched デモ § 1）</div>
+      <div class="output" style="border:1px solid var(--stone); border-radius:6px; font-size:0.8rem; padding:1.25rem 1.5rem;">
+        <span class="out-err">💥 公理破壊検出ウホ！</span><br>
+        &nbsp;&nbsp; 問い: 「おならとは誰のものか」<br>
+        &nbsp;&nbsp; 哲学ゴリラ主張: 「これは風の自己表現である」<br>
+        &nbsp;&nbsp; ❌ 公理崩壊: 「おならは観測されるまで風である」<br>
+        &nbsp;&nbsp; ❌ 公理崩壊: 「純粋関数は臭わない」<br><br>
+        臭気&lt;公理破壊(...)——宇宙を再起動しますウホ&gt;<br>
+        &nbsp;&nbsp; 臭気レベル: 💨💨💨💨💨💨💨💨💨💨 (999)<br>
+        &nbsp;&nbsp; 副作用履歴:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp; 💥 公理が割れた: 哲学ゴリラが「おならとは誰のものか」を放ちながら問うた
+      </div>
+    </div>
+  </section>
+
+  <div class="divider">🪨 🪨 🪨</div>
+
+  <!-- § 外交モジュール -->
+  <section class="section" id="diplomacy">
+    <div class="sec-head">
+      <span class="sec-num">§ 4</span>
+      <h2 class="sec-title">外交モジュール</h2>
+      <span class="sec-badge new">v0.7 NEW</span>
+    </div>
+
+    <p class="note">型 <code style="color:var(--green)">越境臭気&lt;発生源, 到達部族, 濃度&gt;</code> で部族間の臭気問題を追跡する。DungLang分散システム型。</p>
+
+    <div style="margin:1.5rem 0">
+      <div class="code-label">部族間条約テーブル</div>
+      <table class="treaty-table">
+        <thead>
+          <tr><th>発生源</th><th>到達部族</th><th>条約値（上限）</th><th>超過時</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ウホ族</td><td>バナナ族</td>
+            <td><span class="badge-val badge-ok">3</span></td>
+            <td>バナナ賠償（濃度×2本）</td>
+          </tr>
+          <tr>
+            <td>ウホ族</td><td>マンモス部族</td>
+            <td><span class="badge-val badge-ok">5</span></td>
+            <td>バナナ賠償（濃度×2本）</td>
+          </tr>
+          <tr>
+            <td>バナナ族</td><td>マンモス部族</td>
+            <td><span class="badge-val badge-ok">4</span></td>
+            <td>バナナ賠償（濃度×2本）</td>
+          </tr>
+          <tr>
+            <td>哲学ゴリラ連邦</td><td>*（全部族）</td>
+            <td><span class="badge-val badge-zero">0</span></td>
+            <td>問答無用・即時外交問題</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- バグ #001 — 修正済み表示 -->
+    <div class="bug-box fixed">
+      <div class="bug-title">✅ 既知バグ #001（v0.7 original）— patched で修正済み</div>
+      <div class="bug-row"><span class="bug-key">現象</span><span class="bug-val">v0.7 original ではすべての越境臭気が外交問題として処理される</span></div>
+      <div class="bug-row"><span class="bug-key">原因</span><span class="bug-val"><code>dict.get(("哲学ゴリラ連邦","*"), ...)</code> が常に <code>0</code> を返していた。フォールバック順が逆。</span></div>
+      <div class="bug-row"><span class="bug-key">修正</span><span class="bug-val">哲学ゴリラを名前チェックで先に弾き、それ以外は <code>部族間条約[(発生源, 到達部族)]</code> を直接参照するよう修正。未定義はデフォルト4。</span></div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">外交判定フロー（patched）</div>
+      <pre class="code"><span class="kw">関数</span> <span class="type">外交判定</span>(越境臭気) -> <span class="type">判決</span> {
+  <span class="kw">if</span> <span class="str">"哲学ゴリラ"</span> <span class="kw">in</span> 発生源:
+    <span class="kw">return</span> 外交問題()          <span class="cmt">// 問答無用（名前で先に弾く）</span>
+
+  条約値 = 部族間条約.get((発生源, 到達部族), <span class="num">4</span>)
+  <span class="kw">if</span> 濃度 > 条約値:
+    <span class="kw">return</span> 外交問題()          <span class="cmt">// バナナ賠償 = 濃度×2本</span>
+  <span class="kw">else</span>:
+    <span class="kw">return</span> 気象ゴリラのせい()   <span class="cmt">// 「自然現象ウホ」</span>
+}</pre>
+    </div>
+  </section>
+
+  <!-- § 認知GC -->
+  <section class="section" id="gc">
+    <div class="sec-head">
+      <span class="sec-num">§ 5</span>
+      <h2 class="sec-title">認知ガベージコレクション（認知GC）</h2>
+      <span class="sec-badge new">v0.7 NEW</span>
+    </div>
+    <p class="note">バナナ3本以上の受領で過去の臭気事件を完全忘却する。忘却とは消去ではなく歴史からの除去である。</p>
+
+    <div class="gc-flow" style="margin-top:1.5rem">
+      <div class="gc-box">
+        <div class="gc-box-title">記憶バッファ（忘却前）</div>
+        <div class="gc-box-body" style="font-family:'IBM Plex Mono',monospace;font-size:0.82rem;color:var(--pale)">
+          [0] マンモスがおならした<br>
+          [1] 外交問題が発生した<br>
+          [2] 哲学ゴリラが公理を破壊した<br>
+          [3] バナナが3本消えた
+        </div>
+      </div>
+      <div class="gc-arrow">
+        🍌×2 → <span style="color:var(--red)">GC不発（バナナ不足）</span>&nbsp;&nbsp;&nbsp;&nbsp;
+        🍌×3 → <span style="color:var(--green)">GC発動</span>
+      </div>
+      <div class="gc-box" style="background:rgba(126,200,148,0.05);border-color:rgba(126,200,148,0.3)">
+        <div class="gc-box-title" style="color:var(--green)">記憶バッファ（忘却後）</div>
+        <div class="gc-box-body" style="color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+          [] — 空（4件が歴史から消えたウホ）
+        </div>
+      </div>
+    </div>
+
+    <div class="code-wrap" style="margin-top:1.5rem">
+      <div class="code-label">仕様（疑似コード）</div>
+      <pre class="code"><span class="kw">関数</span> <span class="type">バナナを受け取る</span>(n: <span class="type">Int</span>) -> <span class="type">記憶</span> {
+  <span class="kw">if</span> n >= 忘却閾値(<span class="num">3</span>):
+    記憶バッファ.clear()
+    <span class="kw">return</span> <span class="str">"忘却済み"</span>
+  <span class="kw">else</span>:
+    <span class="kw">return</span> <span class="str">"記憶保持中（まだ覚えてるウホ😠）"</span>
+}</pre>
+    </div>
+  </section>
+
+  <!-- § 責任転嫁 -->
+  <section class="section" id="blame">
+    <div class="sec-head">
+      <span class="sec-num">§ 6</span>
+      <h2 class="sec-title">責任転嫁エンジン</h2>
+      <span class="sec-badge new">v0.7 NEW</span>
+    </div>
+    <p class="note">DungLang最強の例外処理システム。型安全性より臭気安全性を優先する設計思想の究極形態。</p>
+
+    <div class="code-wrap" style="margin-top:1.25rem">
+      <div class="code-label">哲学的構造</div>
+      <pre class="code"><span class="kw">try</span>: 臭気事件
+<span class="kw">catch</span>: バナナ三本
+<span class="kw">result</span>: なかったことになる</pre>
+    </div>
+
+    <div style="margin:1.5rem 0">
+      <div class="code-label">転嫁先候補（ランダム選択）</div>
+      <div class="blame-list" style="margin-top:0.5rem">
+        <div class="blame-item">気象ゴリラ</div>
+        <div class="blame-item">焼き芋（自然法則）</div>
+        <div class="blame-item">マンモスの近くにいた誰か</div>
+        <div class="blame-item">観測した人（観測が原因説）</div>
+        <div class="blame-item">風</div>
+        <div class="blame-item">哲学ゴリラ（なんでも哲学ゴリラのせい）</div>
+        <div class="blame-item">過去世のカルマ</div>
+      </div>
+    </div>
+
+    <table class="treaty-table" style="margin-top:1.25rem">
+      <thead>
+        <tr><th>バナナ数</th><th>結果</th><th>信頼度</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge-val badge-zero">0〜2</span></td>
+          <td>転嫁先に責任確定</td>
+          <td>ランダム（12〜87%）</td>
+        </tr>
+        <tr>
+          <td><span class="badge-val badge-ok">3以上</span></td>
+          <td>事案消滅（揉み消し）</td>
+          <td>100%（確実）</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="divider">🔥 🔥 🔥</div>
+
+  <!-- § バグ修正サマリ -->
+  <section class="section" id="bugfix">
+    <div class="sec-head">
+      <span class="sec-num">§ 7</span>
+      <h2 class="sec-title">バグ修正サマリ — v0.7 original → patched</h2>
+      <span class="sec-badge patched">PATCHED</span>
+    </div>
+
+    <!-- バグ #001 -->
+    <div class="bug-box fixed" style="margin-bottom:1.5rem">
+      <div class="bug-title">✅ バグ #001 — 外交判定の条約テーブル参照ミス（修正済み）</div>
+      <div class="bug-row"><span class="bug-key">原因</span>
+        <span class="bug-val"><code>dict.get(key, default)</code> の <code>default</code> は key が<strong>存在しないときのみ</strong>使われる。
+        <code>("哲学ゴリラ連邦", "*")</code> は辞書に登録されているため常にヒットし、値 <code>0</code> が返り続けた。
+        結果、全ケースで濃度 &gt; 0 が成立し、外交問題と判定されていた。</span>
+      </div>
+
+      <div class="code-wrap" style="margin-top:1rem">
+        <div class="code-label">❌ v0.7 original（バグあり）</div>
+        <pre class="code"><span class="bad">条約値 = 部族間条約.get(
+    ("哲学ゴリラ連邦", "*"),                      <span class="cmt"># ← 常にキーが存在するのでここで終わる</span>
+    部族間条約.get((self.発生源, self.到達部族), 4)  <span class="cmt"># ← 永遠に到達しない</span>
+)
+<span class="cmt"># → 常に 0 が返り、ケースBも外交問題になっていた</span></span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label">✅ v0.7 patched（修正済み）</div>
+        <pre class="code"><span class="good"><span class="kw">if</span> <span class="str">"哲学ゴリラ"</span> <span class="kw">in</span> self.発生源:
+    <span class="kw">return</span> 外交問題(self)             <span class="cmt"># 哲学ゴリラは名前で先に弾く</span>
+
+条約値 = 部族間条約.get((self.発生源, self.到達部族), <span class="num">4</span>)
+<span class="kw">if</span> self.濃度 > 条約値:
+    <span class="kw">return</span> 外交問題(self)
+<span class="kw">else</span>:
+    <span class="kw">return</span> 気象ゴリラのせい(self)</span></pre>
+      </div>
+    </div>
+
+    <!-- バグ #002 -->
+    <div class="bug-box fixed">
+      <div class="bug-title">✅ バグ #002 — 構文解析で副作用レベルが取得されない（修正済み）</div>
+      <div class="bug-row"><span class="bug-key">原因</span>
+        <span class="bug-val"><code>観測中</code> モード中に <code>副作用</code> トークンが来ると
+        <code>elif モード == "観測中":</code> の分岐に先に入り、
+        <code>現象["副作用"] = "💨💨"</code> と生文字列で保存されていた。
+        💨 の数を数える処理には到達しなかった。</span>
+      </div>
+
+      <div class="code-wrap" style="margin-top:1rem">
+        <div class="code-label">❌ v0.7 original（バグあり）</div>
+        <pre class="code"><span class="bad"><span class="kw">elif</span> モード == <span class="str">"観測中"</span>:
+    現象[t.種別] = t.値  <span class="cmt"># 副作用もここで保存 → レベル計算されない</span>
+<span class="kw">elif</span> t.種別 == <span class="str">"副作用"</span>:
+    現象[<span class="str">"副作用レベル"</span>] = t.値.count(<span class="str">"💨"</span>)  <span class="cmt"># ← 到達しない</span></span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label">✅ v0.7 patched（修正済み）</div>
+        <pre class="code"><span class="good"><span class="kw">elif</span> t.種別 == <span class="str">"副作用"</span>:
+    現象[<span class="str">"副作用レベル"</span>] = t.値.count(<span class="str">"💨"</span>)  <span class="cmt"># モードに関係なく先に処理</span>
+<span class="kw">elif</span> モード == <span class="str">"観測中"</span>:
+    現象[t.種別] = t.値</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- § 実行ログ -->
+  <section class="section" id="runlog">
+    <div class="sec-head">
+      <span class="sec-num">§ 8</span>
+      <h2 class="sec-title">実行結果確認 — run.log (patched)</h2>
+      <span class="sec-badge patched">PATCHED</span>
+    </div>
+
+    <p class="note" style="margin-bottom:1.5rem">ケースA（濃度7 &gt; 条約値3）→ 外交問題、ケースB（濃度2 ≤ 条約値3）→ 気象ゴリラのせい。fix #001 により正しく動作するようになった。</p>
+
+    <div style="margin-bottom:1.25rem">
+      <div class="code-label">外交判定 ケース比較</div>
+      <table class="treaty-table">
+        <thead>
+          <tr><th>ケース</th><th>発生源</th><th>濃度</th><th>条約値</th><th>期待</th><th>original</th><th>patched</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>A</td><td>ウホ族→バナナ族</td><td>7</td><td>3</td>
+            <td>外交問題</td>
+            <td style="color:var(--green)">✅ 外交問題</td>
+            <td style="color:var(--green)">✅ 外交問題</td>
+          </tr>
+          <tr>
+            <td>B</td><td>ウホ族→バナナ族</td><td>2</td><td>3</td>
+            <td>気象ゴリラのせい</td>
+            <td style="color:var(--red)">❌ 外交問題（バグ）</td>
+            <td style="color:var(--green)">✅ 気象ゴリラのせい</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">run.log 抜粋</div>
+      <div class="output" style="border:1px solid var(--stone); border-radius:6px; padding:1.25rem 1.5rem; max-height:360px; overflow-y:auto; white-space:pre; font-size:0.77rem;">━━━ § 2  越境臭気・外交処理 ━━━
+
+🌍 外交問題発生ウホ！
+   発生源部族: ウホ族
+   被害部族:   バナナ族
+   臭気濃度:   7 (条約値超過)
+   容疑者:     マンモス
+   📜 外交処理開始...
+   バナナ賠償: 🍌 × 14
+
+   📋 判定結果: 外交解決: ウホ族→バナナ族 バナナ14本で和解
+
+<span class="out-hi">🌤️  気象ゴリラ判定: 濃度2 ≤ 条約値
+   → 「これは自然現象ウホ。風が運んだだけ。」
+   📋 判定結果: 無罪: 気象ゴリラ証明済み（ウホ族は関係ない）  ← fix #001 ✅</span>
+
+━━━ § 3  認知ガベージコレクション ━━━
+   🧠 記憶追加: 「マンモスがおならした」（現在1件）
+   🧠 記憶追加: 「外交問題が発生した」（現在2件）
+   🧠 記憶追加: 「哲学ゴリラが公理を破壊した」（現在3件）
+   🧠 記憶追加: 「バナナが3本消えた」（現在4件）
+
+   --- バナナ2本で試みる ---
+   ⚠️  バナナ不足（2本 &lt; 閾値3本）
+   まだ覚えてるウホ😠
+   結果: 記憶保持中（あと1本でGCウホ）
+
+   --- バナナ3本投入 ---
+   ✨ 認知GC発動: 4件の記憶を忘却
+   ムシャムシャ... 🍌×3... ウホ......
+   💭 「何かあったっけ？まあいいウホ🍌」
+   結果: 忘却済み（4件の臭気事件が歴史から消えたウホ）
+   残記憶数: 0件</div>
+    </div>
+  </section>
+
+  <!-- § パターンマッチ -->
+  <section class="section" id="pattern">
+    <div class="sec-head">
+      <span class="sec-num">§ 9</span>
+      <h2 class="sec-title">パターンマッチ — 照合構文</h2>
+      <span class="sec-badge core">CORE</span>
+    </div>
+    <table class="match-table">
+      <thead>
+        <tr><th>パターン</th><th>条件</th><th>判決</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="pat">💨(無音, 無臭)</span></td>
+          <td class="cond">検出なし</td>
+          <td><span class="res">"風"</span></td>
+        </tr>
+        <tr>
+          <td><span class="pat">💨(有音, 微臭)</span></td>
+          <td class="cond">曖昧な事例</td>
+          <td><span class="res">"疑い"</span></td>
+        </tr>
+        <tr>
+          <td><span class="pat">💩(有音, 強臭)</span></td>
+          <td class="cond">証拠あり</td>
+          <td><span class="res">"事件"</span></td>
+        </tr>
+        <tr>
+          <td><span class="pat">🍠(満腹, 数分後)</span></td>
+          <td class="cond">因果関係明確</td>
+          <td><span class="res">"自然法則"</span></td>
+        </tr>
+        <tr>
+          <td><span class="pat">_</span></td>
+          <td class="cond">不明</td>
+          <td><span class="res">"哲学ゴリラに送る"</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- § 大定理 -->
+  <section class="section" id="theorem">
+    <div class="sec-head">
+      <span class="sec-num">§ 10</span>
+      <h2 class="sec-title">排出保存則 — Conservation of Dung</h2>
+      <span class="sec-badge core">THEOREM</span>
+    </div>
+    <div class="theorem">
+      <div class="thm-label">定理 — 排出保存則</div>
+      <div class="thm-name">Conservation of Dung</div>
+      <div class="thm-formula">
+        入力された焼き芋は、いずれ何らかの形で世界へ返る。<br><br>
+        ∀ 焼き芋 ∈ 世界 &nbsp;⟹&nbsp; ∃ t &gt; 0 : 解放(焼き芋, t) = 真
+      </div>
+    </div>
+  </section>
+
+  <!-- § ロードマップ -->
+  <section class="section" id="roadmap">
+    <div class="sec-head">
+      <span class="sec-num">§ 11</span>
+      <h2 class="sec-title">バージョンロードマップ</h2>
+    </div>
+    <div class="roadmap">
+      <div class="rm-item done">
+        <div class="rm-ver">v0.001</div>
+        <div class="rm-desc">石器時代版</div>
+        <div class="rm-sub">型システム・臭気モナド・パターンマッチ・排出保存則</div>
+      </div>
+      <div class="rm-item done">
+        <div class="rm-ver">v0.6</div>
+        <div class="rm-desc">Claude実装版</div>
+        <div class="rm-sub">字句解析・構文解析・公理一覧・哲学ゴリラ例外</div>
+      </div>
+      <div class="rm-item current">
+        <div class="rm-ver">v0.7 patched ← NOW</div>
+        <div class="rm-desc">外交・記憶・責任転嫁モジュール（安定版）</div>
+        <div class="rm-sub">越境臭気型 / 部族間条約 / バナナ賠償 / 認知GC / 責任転嫁エンジン / 公理破壊 / バグ#001・#002修正済み</div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-ver">v0.8（予定）</div>
+        <div class="rm-desc">マンモス分散トランザクション</div>
+        <div class="rm-sub">2相コミット / 洞窟間合意プロトコル</div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-ver">v0.9（予定）</div>
+        <div class="rm-desc">洞窟WebSocket</div>
+        <div class="rm-sub">臭気のリアルタイム伝搬 / プッシュ通知（風向き変化）</div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-ver">v1.0（予定）</div>
+        <div class="rm-desc">pip install dunglang 🍌🔥</div>
+        <div class="rm-sub">PyPI公開 / 洞窟ドキュメント / チュートリアル</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- フッター -->
+  <footer class="footer">
+    <div>
+      <div class="footer-brand">DungLang 🦍</div>
+      <div style="font-size:0.82rem;color:var(--pale);margin-top:0.3rem">石器時代の関数型言語 — v0.7 prototype / patched demo</div>
+    </div>
+    <div class="footer-meta">
+      Language Specification v0.7 patched<br>
+      All side effects acknowledged<br>
+      No pure functions were harmed<br>
+      <span style="color:var(--stone)">Compiled with 🪨🔥 stone and fire</span>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
