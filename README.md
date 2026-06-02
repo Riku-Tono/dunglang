@@ -118,3 +118,14 @@ run_en.log                    Pre-captured execution log
 > Warning: Stench-safety has surpassed type-safety  
 > Note: Truth has been thoroughly bent by side effects and bananas  
 > UUHO 🦍
+
+
+---
+
+## License
+
+MIT License. See [LICENSE](./LICENSE).
+
+## Author Note
+
+Please don’t alter the 🪨 and 🦍 symbols; they are part of the project’s identity.
