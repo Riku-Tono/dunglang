@@ -9,6 +9,14 @@ It asks a simple question: what if a language could record effects without blami
 
 ---
 
+#  🦍🔥🪨
+
+[日本語版はこちら](./ja/README.md) / [Japanese README](./ja/README.md)
+
+> Stench-driven programming language. UUHO.
+
+---
+
 ## Modules Added in v0.7
 
 | Module | Overview |
